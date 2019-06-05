@@ -13,10 +13,10 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document
 public class Role {
 
-    @Id
-    private String id;
+  @Id
+  private String id;
 
-    @Indexed(unique = true)
-    private String name;
+  @Indexed(unique = true)
+  private String name;
 
 }

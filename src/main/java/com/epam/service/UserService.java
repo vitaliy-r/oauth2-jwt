@@ -5,10 +5,10 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 
 public interface UserService extends UserDetailsService {
 
-    User save(User user);
+  User save(User user);
 
-    User findById(String id);
+  User findById(String id);
 
-    void deleteById(String id);
+  void deleteById(String id);
 
 }

@@ -13,11 +13,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/oauth")
 public class RegisterController {
 
-    private final UserService userService;
+  private final UserService userService;
 
-    @PostMapping("/signup")
-    public User create(@RequestBody User user) {
-        return userService.save(user);
-    }
+  @PostMapping("/signup")
+  public User create(@RequestBody User user) {
+    return userService.save(user);
+  }
 
 }

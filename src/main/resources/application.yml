@@ -1,13 +1,26 @@
-spring:
-  jackson:
-    default-property-inclusion: NON_NULL
-  data:
-    mongodb:
-      uri: mongodb://localhost:27017/jwt-oauth2
-
 logging:
   level:
     root: INFO
     org:
       springframework:
         web: INFO
+
+spring:
+  jackson:
+    default-property-inclusion: NON_NULL
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/oauth2-jwt
+
+app:
+  security:
+    tokenSigningKey: SldUU3VwZXJTZWNyZXRLZXkxMjM0NXF3ZXJ0eXVpb3Bhc2RmZ2hqa2w=
+    validitySeconds:
+      accessToken: 3600 # 1 hour
+      refreshToken: 5184000 # 60 days
+    client:
+      webClient:
+        clientId: webClient
+        clientSecret: clientSecret
+        grantType: password,refresh_token,authorization_code,client_credentials,implicit
+        scope: read,write

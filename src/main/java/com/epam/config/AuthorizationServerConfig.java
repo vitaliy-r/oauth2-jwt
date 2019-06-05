@@ -1,6 +1,8 @@
 package com.epam.config;
 
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,58 +20,64 @@ import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 @EnableAuthorizationServer
 public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter {
 
-    private static final String CLIENT_ID = "web";
-    private static final String CLIENT_SECRET = "clientSecret";
-    private static final String GRANT_TYPE_PASSWORD = "password";
-    private static final String AUTHORIZATION_CODE = "authorization_code";
-    private static final String CLIENT_CREDENTIALS = "client_credentials";
-    private static final String REFRESH_TOKEN = "refresh_token";
-    private static final String IMPLICIT = "implicit";
-    private static final String SCOPE_READ = "read";
-    private static final String SCOPE_WRITE = "write";
-    private static final String TRUST = "trust";
-    private static final int ACCESS_TOKEN_VALIDITY_SECONDS = 60 * 60 * 60;
-    private static final int REFRESH_TOKEN_VALIDITY_SECONDS = 6 * 60 * 60;
+  private final AuthenticationManager authenticationManager;
 
-    private final AuthenticationManager authenticationManager;
+  @Value("${app.security.tokenSigningKey}")
+  private String tokenSigningKey;
 
-    @Override
-    public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-        clients
-                .inMemory()
-                .withClient(CLIENT_ID)
-//                .secret(CLIENT_SECRET)
-                .authorizedGrantTypes(GRANT_TYPE_PASSWORD, REFRESH_TOKEN,
-                        CLIENT_CREDENTIALS, AUTHORIZATION_CODE, IMPLICIT)
-                .scopes(SCOPE_READ, SCOPE_WRITE, TRUST)
-                .accessTokenValiditySeconds(ACCESS_TOKEN_VALIDITY_SECONDS)
-                .refreshTokenValiditySeconds(REFRESH_TOKEN_VALIDITY_SECONDS);
-    }
+  @Value("${app.security.validitySeconds.accessToken}")
+  private int accessTokenValiditySeconds;
 
-    @Override
-    public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
-        endpoints
-                .tokenStore(tokenStore())
-                .authenticationManager(authenticationManager)
-                .accessTokenConverter(accessTokenConverter());
-    }
+  @Value("${app.security.validitySeconds.accessToken}")
+  private int refreshTokenValiditySeconds;
 
-    @Override
-    public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
-        security
-                .allowFormAuthenticationForClients();
-    }
+  @Value("${app.security.client.webClient.clientId}")
+  private String webClientId;
 
-    @Bean
-    public JwtAccessTokenConverter accessTokenConverter() {
-        JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
-        converter.setSigningKey("as466gf");
-        return converter;
-    }
+  @Value("${app.security.client.webClient.clientSecret}")
+  private String webClientSecret;
 
-    @Bean
-    public TokenStore tokenStore() {
-        return new JwtTokenStore(accessTokenConverter());
-    }
+  @Value("#{'${app.security.client.webClient.grantType}'.split(',')}")
+  private List<String> webClientGrantTypes;
+
+  @Value("#{'${app.security.client.webClient.scope}'.split(',')}")
+  private List<String> webClientScopes;
+
+  @Override
+  public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
+    clients.inMemory()
+        .withClient(webClientId)
+//          .secret(webClientSecret)
+          .authorizedGrantTypes(webClientGrantTypes.toArray(new String[0]))
+          .scopes(webClientScopes.toArray(new String[0]))
+          .accessTokenValiditySeconds(accessTokenValiditySeconds)
+          .refreshTokenValiditySeconds(refreshTokenValiditySeconds);
+  }
+
+  @Override
+  public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
+    endpoints
+        .tokenStore(tokenStore())
+        .authenticationManager(authenticationManager)
+        .accessTokenConverter(accessTokenConverter());
+  }
+
+  @Override
+  public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
+    security
+        .allowFormAuthenticationForClients();
+  }
+
+  @Bean
+  public JwtAccessTokenConverter accessTokenConverter() {
+    JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
+    converter.setSigningKey(tokenSigningKey);
+    return converter;
+  }
+
+  @Bean
+  public TokenStore tokenStore() {
+    return new JwtTokenStore(accessTokenConverter());
+  }
 
 }
