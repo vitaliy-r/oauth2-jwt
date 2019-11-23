@@ -1,6 +1,6 @@
 package com.epam.model;
 
-import lombok.AllArgsConstructor;
+import java.io.Serializable;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
@@ -9,9 +9,12 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 @Document
-public class Role {
+public class Role implements Serializable {
+
+  public Role(String name) {
+    this.name = name;
+  }
 
   @Id
   private String id;

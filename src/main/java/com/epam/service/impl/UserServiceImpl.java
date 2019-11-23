@@ -46,7 +46,7 @@ public class UserServiceImpl implements UserService {
     Role role = roleRepository.findByName("ROLE_USER").orElseThrow(() ->
         new RuntimeException("Role is not found!"));
 
-    user.setRoles(new HashSet<>(Collections.singletonList(role)));
+    user.setRoles(Collections.singleton(role));
     user.setPassword(passwordEncoder.encode(user.getPassword()));
 
     return userRepository.save(user);

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
@@ -20,6 +21,7 @@ import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 @EnableAuthorizationServer
 public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter {
 
+  private final PasswordEncoder passwordEncoder;
   private final AuthenticationManager authenticationManager;
 
   @Value("${app.security.tokenSigningKey}")
@@ -28,7 +30,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
   @Value("${app.security.validitySeconds.accessToken}")
   private int accessTokenValiditySeconds;
 
-  @Value("${app.security.validitySeconds.accessToken}")
+  @Value("${app.security.validitySeconds.refreshToken}")
   private int refreshTokenValiditySeconds;
 
   @Value("${app.security.client.webClient.clientId}")
@@ -47,15 +49,15 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
   public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
     clients.inMemory()
         .withClient(webClientId)
-//          .secret(webClientSecret)
-          .authorizedGrantTypes(webClientGrantTypes.toArray(new String[0]))
-          .scopes(webClientScopes.toArray(new String[0]))
+//          .secret(passwordEncoder.encode(webClientSecret))
+          .authorizedGrantTypes(webClientGrantTypes.toArray(new String[]{}))
+          .scopes(webClientScopes.toArray(new String[]{}))
           .accessTokenValiditySeconds(accessTokenValiditySeconds)
           .refreshTokenValiditySeconds(refreshTokenValiditySeconds);
   }
 
   @Override
-  public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
+  public void configure(AuthorizationServerEndpointsConfigurer endpoints) {
     endpoints
         .tokenStore(tokenStore())
         .authenticationManager(authenticationManager)
@@ -63,9 +65,14 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
   }
 
   @Override
-  public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
+  public void configure(AuthorizationServerSecurityConfigurer security) {
     security
         .allowFormAuthenticationForClients();
+  }
+
+  @Bean
+  public TokenStore tokenStore() {
+    return new JwtTokenStore(accessTokenConverter());
   }
 
   @Bean
@@ -73,11 +80,6 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
     JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
     converter.setSigningKey(tokenSigningKey);
     return converter;
-  }
-
-  @Bean
-  public TokenStore tokenStore() {
-    return new JwtTokenStore(accessTokenConverter());
   }
 
 }

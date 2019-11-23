@@ -29,7 +29,8 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
     http
         .csrf().disable()
         .sessionManagement()
-          .sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
+          .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+          .and()
         .authorizeRequests()
           .antMatchers("/oauth/**").permitAll()
           .antMatchers("/user/**").hasAnyRole("USER", "ADMIN")
